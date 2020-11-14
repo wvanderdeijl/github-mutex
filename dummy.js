@@ -5,6 +5,9 @@
 //     repo: context.repo.repo,
 //     body: '👋 Thanks for reporting!'
 // })
-module.exports = ({ _github, context }) => {
-    return context.payload.client_payload.value;
+Object.defineProperty(exports, "__esModule", { value: true });
+module.exports = (args) => {
+    args.core.warning(JSON.stringify(args.context.payload, undefined, 4));
+    return 'foo';
+    // return args.context.payload.client_payload.value
 };
