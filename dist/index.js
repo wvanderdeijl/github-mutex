@@ -22,11 +22,18 @@ async function run() {
         const token = core.getInput('GITHUB_TOKEN');
         // core.info(token);
         const octokit = github.getOctokit(token);
-        const pulls = await octokit.pulls.list({
+        // const pulls = await octokit.pulls.list({
+        //     owner: github.context.repo.owner,
+        //     repo: github.context.repo.repo,
+        // });
+        // core.info(JSON.stringify(pulls.data, undefined, 4));
+        const pr = await octokit.pulls.get({
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
+            pull_number: 1,
         });
-        core.info(JSON.stringify(pulls.data, undefined, 4));
+        core.info(JSON.stringify(pr.headers, undefined, 4));
+        core.info(JSON.stringify(pr.data, undefined, 4));
     }
     catch (error) {
         core.error(`error occured: ${error.message}`);
