@@ -4,6 +4,14 @@ jobs:
   comment:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/github-script@v3
+        id: set-result
+        with:
+          script: |
+            return "Hello!"
+          result-encoding: string
+      - name: Get result
+        run: echo "${{steps.set-result.outputs.result}}"
       - name: Checkout
         uses: actions/checkout@v2
       - uses: actions/github-script@v3

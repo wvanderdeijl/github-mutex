@@ -17,8 +17,8 @@ import type { context } from '@actions/github'
 // import core from '@actions/core';
 // import io from '@actions/io';
 
-declare const core: any;
-declare const io: any;
+// declare const core: any;
+// declare const io: any;
 
 type Octokit = InstanceType<typeof GitHub>
 type Context = typeof context;
@@ -32,8 +32,8 @@ interface Arguments {
 
 module.exports = (args: Arguments) => {
     console.log(Object.keys(args));
-    console.log(`core: ${!!core} ${typeof core}`)
-    console.log(`io: ${!!io} ${typeof io}`)
+    // console.log(`core: ${!!core} ${typeof core}`)
+    // console.log(`io: ${!!io} ${typeof io}`)
     // core.warning(JSON.stringify(args.context.payload, undefined, 4));
     return 'foo';
     // return args.context.payload.client_payload.value
