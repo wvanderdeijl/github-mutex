@@ -8,8 +8,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 module.exports = (args) => {
     console.log(Object.keys(args));
-    console.log(`core: ${'core' in global} ${typeof global.core}`);
-    console.log(`io: ${'io' in global} ${typeof global.io}`);
+    console.log(`core: ${!!core} ${typeof core}`);
+    console.log(`io: ${!!io} ${typeof io}`);
     // core.warning(JSON.stringify(args.context.payload, undefined, 4));
     return 'foo';
     // return args.context.payload.client_payload.value
