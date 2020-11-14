@@ -26,6 +26,7 @@ interface Arguments {
 }
 
 module.exports = (args: Arguments) => {
+    console.log(Object.keys(args));
     args.core.warning(JSON.stringify(args.context.payload, undefined, 4));
     return 'foo';
     // return args.context.payload.client_payload.value
