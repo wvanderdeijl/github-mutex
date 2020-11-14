@@ -26,6 +26,7 @@ jobs:
       - uses: ./
         id: my-action
         with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           milliseconds: 1000
       - name: Show result
         run: echo "${{steps.my-action.outputs.time}}"
