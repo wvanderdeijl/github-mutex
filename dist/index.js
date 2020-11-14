@@ -7,28 +7,44 @@ require('./sourcemap-register.js');module.exports =
 
 "use strict";
 
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core_1 = __importDefault(__webpack_require__(186));
-const github_1 = __importDefault(__webpack_require__(438));
+const core = __importStar(__webpack_require__(186));
+const github = __importStar(__webpack_require__(438));
 const wait_1 = __webpack_require__(817);
 async function run() {
     try {
-        const ms = core_1.default.getInput('milliseconds');
-        core_1.default.debug(`Waiting ${ms} milliseconds ...`); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-        core_1.default.debug(new Date().toTimeString());
+        const ms = core.getInput('milliseconds');
+        core.debug(`Waiting ${ms} milliseconds ...`); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
+        core.debug(new Date().toTimeString());
         await wait_1.wait(parseInt(ms, 10));
-        core_1.default.debug(new Date().toTimeString());
-        core_1.default.setOutput('time', new Date().toTimeString());
-        const token = core_1.default.getInput('GITHUB_TOKEN');
-        const octokit = github_1.default.getOctokit(token);
+        core.debug(new Date().toTimeString());
+        core.setOutput('time', new Date().toTimeString());
+        const token = core.getInput('GITHUB_TOKEN');
+        const octokit = github.getOctokit(token);
         const pulls = await octokit.pulls.list();
-        core_1.default.info(JSON.stringify(pulls.data, undefined, 4));
+        core.info(JSON.stringify(pulls.data, undefined, 4));
     }
     catch (error) {
-        core_1.default.setFailed(error.message);
+        core.setFailed(error.message);
     }
 }
 run();

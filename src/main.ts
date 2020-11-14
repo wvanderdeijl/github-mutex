@@ -1,5 +1,5 @@
-import core from '@actions/core'
-import github from '@actions/github'
+import * as core from '@actions/core'
+import * as github from '@actions/github'
 import { wait } from './wait'
 
 async function run(): Promise<void> {
@@ -15,7 +15,7 @@ async function run(): Promise<void> {
 
         const token = core.getInput('GITHUB_TOKEN');
         const octokit = github.getOctokit(token);
-        const pulls = await octokit.pulls.list()
+        const pulls = await octokit.pulls.list();
         core.info(JSON.stringify(pulls.data, undefined, 4));
 
     } catch (error) {
