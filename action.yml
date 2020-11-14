@@ -3,7 +3,7 @@ description: 'Provide a description here'
 author: 'Your name or organization here'
 inputs:
   GITHUB_TOKEN:
-    description: 'Github token should be supplied as ${{ secrets.GITHUB_TOKEN }}'
+    description: 'Github token'
     required: true
   milliseconds: # change this
     required: true
