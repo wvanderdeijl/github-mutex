@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import { inspect } from 'util'
 import { wait } from './wait'
 
 async function run(): Promise<void> {
@@ -43,8 +44,8 @@ async function run(): Promise<void> {
 
     } catch (error) {
         // HttpError
-        core.error(`error occured: ${error.message}`)
-        core.error(JSON.stringify(error, undefined, 4);
+        core.error(`error occured: ${error.message}`);
+        core.error(inspect(error));
         core.setFailed(error)
     }
 }

@@ -10,6 +10,7 @@ require('./sourcemap-register.js');module.exports =
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __webpack_require__(186);
 const github = __webpack_require__(438);
+const util_1 = __webpack_require__(669);
 const wait_1 = __webpack_require__(817);
 async function run() {
     try {
@@ -50,7 +51,7 @@ async function run() {
     catch (error) {
         // HttpError
         core.error(`error occured: ${error.message}`);
-        core.error(JSON.stringify(error, undefined, 4));
+        core.error(util_1.inspect(error));
         core.setFailed(error);
     }
 }
