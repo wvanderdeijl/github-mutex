@@ -37,9 +37,9 @@ async function run(): Promise<void> {
             repo: github.context.repo.repo,
             pull_number: 1,
             title: new Date().toISOString(),
-            headers: {
-                'If-Match': etag,
-            },
+            // headers: {
+            //     'If-Match': etag,
+            // },
         });
         core.info(`update statis: ${updated.status}`);
 
