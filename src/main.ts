@@ -31,13 +31,14 @@ async function run(): Promise<void> {
         core.info(`etag: ${etag}`);
         // core.info(JSON.stringify(pr.headers, undefined, 4));
         // core.info(JSON.stringify(pr.data, undefined, 4));
+        // using `If-Match` with wrong etag will respond with http error 412
         const updated = await octokit.pulls.update({
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
             pull_number: 1,
             title: new Date().toISOString(),
             headers: {
-                'If-Match': 'fake-etag',
+                'If-Match': etag,
             },
         });
         core.info(`update statis: ${updated.status}`);
