@@ -7,8 +7,9 @@ jobs:
       - uses: actions/github-script@v3
         id: set-result
         with:
+          # github, context, core, io
           script: |
-            return "Hello!"
+            return `Hello! ${typeof github} ${typeof context} ${typeof core} ${typeof io}`
           result-encoding: string
       - name: Get result
         run: echo "${{steps.set-result.outputs.result}}"
