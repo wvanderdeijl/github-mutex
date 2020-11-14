@@ -48,7 +48,7 @@ async function run() {
     }
 }
 run();
-
+//# sourceMappingURL=main.js.map
 
 /***/ }),
 
@@ -68,7 +68,7 @@ async function wait(milliseconds) {
     });
 }
 exports.wait = wait;
-
+//# sourceMappingURL=wait.js.map
 
 /***/ }),
 
