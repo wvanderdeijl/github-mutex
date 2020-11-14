@@ -26,7 +26,8 @@ async function run() {
         core.info(JSON.stringify(pulls.data, undefined, 4));
     }
     catch (error) {
-        core.setFailed(error.message);
+        core.error(`error occured: ${error.message}`);
+        core.setFailed(error);
     }
 }
 run();
