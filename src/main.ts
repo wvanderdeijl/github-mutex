@@ -16,7 +16,10 @@ async function run(): Promise<void> {
         const token = core.getInput('GITHUB_TOKEN');
         // core.info(token);
         const octokit = github.getOctokit(token);
-        const pulls = await octokit.pulls.list();
+        const pulls = await octokit.pulls.list({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+        });
         core.info(JSON.stringify(pulls.data, undefined, 4));
 
     } catch (error) {
