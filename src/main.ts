@@ -26,8 +26,20 @@ async function run(): Promise<void> {
             repo: github.context.repo.repo,
             pull_number: 1,
         });
-        core.info(JSON.stringify(pr.headers, undefined, 4));
-        core.info(JSON.stringify(pr.data, undefined, 4));
+        const etag = pr.headers.etag;
+        core.info(`etag: ${etag}`);
+        // core.info(JSON.stringify(pr.headers, undefined, 4));
+        // core.info(JSON.stringify(pr.data, undefined, 4));
+        const updated = await octokit.pulls.update({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            pull_number: 1,
+            title: new Date().toISOString(),
+            headers: {
+                'If-Match': 'fake-etag',
+            },
+        });
+        core.info(`update statis: ${updated.status}`);
 
     } catch (error) {
         core.error(`error occured: ${error.message}`)
