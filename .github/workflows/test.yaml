@@ -9,6 +9,12 @@ jobs:
         with:
           # github, context, core, io
           script: |
+            "use strict";
+            Object.defineProperty(exports, "__esModule", { value: true });
+            console.log('github', Object.keys(github));
+            console.log('context', Object.keys(context));
+            console.log('core', Object.keys(core));
+            console.log('io', Object.keys(io));
             return `Hello! ${typeof github} ${typeof context} ${typeof core} ${typeof io}`
           result-encoding: string
       - name: Get result
