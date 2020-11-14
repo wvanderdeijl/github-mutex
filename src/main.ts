@@ -42,8 +42,9 @@ async function run(): Promise<void> {
         core.info(`update statis: ${updated.status}`);
 
     } catch (error) {
+        // HttpError
         core.error(`error occured: ${error.message}`)
-        core.error(error);
+        core.error(JSON.stringify(error, undefined, 4);
         core.setFailed(error)
     }
 }
