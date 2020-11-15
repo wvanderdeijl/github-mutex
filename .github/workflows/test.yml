@@ -17,5 +17,7 @@ jobs:
           labelRequested: e2e:request
           labelQueued: e2e:queued
           labelRunning: e2e:running
+      - name: Simulate e2e run for 60 seconds
+        run: sleep 60
       - name: Show result
         run: echo "${{steps.my-action.outputs.time}}"

@@ -24,19 +24,21 @@ async function run() {
         const payload = utils_1.getLabeledPayload(labelRequested);
         if (!payload) {
             // TODO: log label?
-            core.debug(`nothing to do for action ${github.context.action}`);
+            core.debug(`nothing to do in post for action ${github.context.action}`);
             return;
         }
         await utils_1.removeLabel(payload.pull_request.number, labelRunning);
         if ((await utils_1.findPullRequestsByLabel(labelRequested)).length) {
-            // let request PR pick its spot
+            core.debug(`pull requests found with label ${labelRequested}; let them pick next winner`);
             return;
         }
         const queued = await utils_1.findPullRequestsByLabel(labelQueued);
         if (!queued.length) {
+            core.debug(`no pull requests with label ${labelQueued}, so no next candidate`);
             return;
         }
         const luckyOne = queued[Math.floor(Math.random() * queued.length)];
+        core.debug(`going to start pull request ${luckyOne.number} out of candidates: ${JSON.stringify(queued.map(p => p.number))}`);
         // TODO: use other token so this triggers action
         await utils_1.switchLabel(luckyOne, labelQueued, labelRequested);
     }
@@ -85,6 +87,7 @@ async function findPullRequestsByLabel(label) {
 }
 exports.findPullRequestsByLabel = findPullRequestsByLabel;
 async function removeLabel(prNumber, label) {
+    core.debug(`removing label ${label} from ${prNumber}`);
     await octokit.issues.removeLabel({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
@@ -94,6 +97,7 @@ async function removeLabel(prNumber, label) {
 }
 exports.removeLabel = removeLabel;
 async function switchLabel(pr, from, to) {
+    core.debug(`removing label ${from} and adding label ${to} for pull request ${pr.number}`);
     await octokit.issues.setLabels({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,

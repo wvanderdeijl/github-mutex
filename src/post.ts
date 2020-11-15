@@ -18,21 +18,23 @@ async function run(): Promise<void> {
         const payload = getLabeledPayload(labelRequested);
         if (!payload) {
             // TODO: log label?
-            core.debug(`nothing to do for action ${github.context.action}`);
+            core.debug(`nothing to do in post for action ${github.context.action}`);
             return;
         }
 
         await removeLabel(payload.pull_request.number, labelRunning);
 
         if ((await findPullRequestsByLabel(labelRequested)).length) {
-            // let request PR pick its spot
+            core.debug(`pull requests found with label ${labelRequested}; let them pick next winner`);
             return;
         }
         const queued = await findPullRequestsByLabel(labelQueued);
         if (!queued.length) {
+            core.debug(`no pull requests with label ${labelQueued}, so no next candidate`);
             return;
         }
         const luckyOne = queued[Math.floor(Math.random() * queued.length)];
+        core.debug(`going to start pull request ${luckyOne.number} out of candidates: ${JSON.stringify(queued.map(p => p.number))}`)
         // TODO: use other token so this triggers action
         await switchLabel(luckyOne, labelQueued, labelRequested);
     } catch (error) {
