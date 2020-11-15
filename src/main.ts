@@ -11,7 +11,7 @@ async function run(): Promise<void> {
         const labelRunning = core.getInput('labelRunning');
 
         core.info(JSON.stringify(github.context, undefined, 4));
-        if (github.context.action !== 'labeled') {
+        if (github.context.payload.action !== 'labeled') {
             core.debug(`nothing to do for action ${github.context.action}`);
         }
         const payload = github.context.payload as EventPayloads.WebhookPayloadPullRequest;
