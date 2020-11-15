@@ -17,7 +17,7 @@ async function run() {
         const labelRequested = core.getInput('labelRequested');
         const labelQueued = core.getInput('labelQueued');
         const labelRunning = core.getInput('labelRunning');
-        core.info(JSON.stringify(github.context, undefined, 4));
+        // core.info(JSON.stringify(github.context, undefined, 4));
         if (github.context.payload.action !== 'labeled') {
             core.debug(`nothing to do for action ${github.context.action}`);
         }

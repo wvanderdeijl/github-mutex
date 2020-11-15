@@ -10,7 +10,7 @@ async function run(): Promise<void> {
         const labelQueued = core.getInput('labelQueued');
         const labelRunning = core.getInput('labelRunning');
 
-        core.info(JSON.stringify(github.context, undefined, 4));
+        // core.info(JSON.stringify(github.context, undefined, 4));
         if (github.context.payload.action !== 'labeled') {
             core.debug(`nothing to do for action ${github.context.action}`);
         }
@@ -26,6 +26,9 @@ async function run(): Promise<void> {
         const token = core.getInput('GITHUB_TOKEN');
         // core.info(token);
         const octokit = github.getOctokit(token);
+        // const prs = await octokit.search.issuesAndPullRequests({q:'is:pr+is:open+label:e2e:request'});
+        const prs = await octokit.search.issuesAndPullRequests({ q: 'is:pr+label:e2e:request' });
+        core.debug(JSON.stringify(prs.data.items));
         // const pulls = await octokit.pulls.list({
         //     owner: github.context.repo.owner,
         //     repo: github.context.repo.repo,
@@ -51,6 +54,15 @@ async function run(): Promise<void> {
         //     // },
         // });
         // core.info(`update statis: ${updated.status}`);
+
+        async function findByLabel(label: string) {
+            octokit.pulls.
+            const pulls = await octokit.pulls.list({
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+
+            });
+        }
     } catch (error) {
         // HttpError
         core.error(`error occured: ${error.message}`);
