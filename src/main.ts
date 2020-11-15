@@ -21,18 +21,18 @@ async function run(): Promise<void> {
             return;
         }
 
-        core.debug(JSON.stringify(github.context, undefined, 4));
+        // core.debug(JSON.stringify(github.context, undefined, 4));
         // core.setOutput('Time', new Date().toTimeString())
 
         // const token = core.getInput('GITHUB_TOKEN');
         // const octokit = github.getOctokit(token);
 
         const running = await findPullRequestsByLabel(labelRunning);
-        core.debug(`PR's that currently have label ${labelRunning}: ${running.map(v => v.number)}`)
         if (running.length) {
             core.debug('found PR that is already running; queue this PR');
             core.debug(`replacing label ${labelRequested} with ${labelQueued} for PR ${payload.pull_request.number}`);
             await switchLabel(payload.pull_request, labelRequested, labelQueued);
+            core.setFailed('found other running pull requests');
         } else {
             await switchLabel(payload.pull_request, labelRequested, labelRunning);
             await new Promise(resolve => setTimeout(resolve, 5000));

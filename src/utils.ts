@@ -23,6 +23,7 @@ export function getLabeledPayload(label: string) {
 export async function findPullRequestsByLabel(label: string) {
     core.debug(`getting pull request with label ${label}`);
     const prs = await octokit.search.issuesAndPullRequests({ q: `is:pr+label:${label}` });
+    core.debug(`pull requests that currently have label ${label}: ${JSON.stringify(prs.data.items.map(v => v.number))}`)
     return prs.data.items;
 }
 
