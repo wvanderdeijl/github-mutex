@@ -4,6 +4,8 @@
   "description": "Experiment with github actions that control one-run-at-a-time",
   "main": "lib/main.js",
   "scripts": {
+    "build": "tsc",
+    "package": "ncc build --source-map --license license.txt",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
