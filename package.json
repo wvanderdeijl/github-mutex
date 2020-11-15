@@ -5,8 +5,8 @@
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
-    "package:main": "ncc build lib/main.js --out dist/main/index.js --source-map --license license.txt",
-    "package:post": "ncc build lib/post.js --out dist/post/index.js --source-map --license license.txt",
+    "package:main": "ncc build lib/main.js --out dist/main --source-map --license license.txt",
+    "package:post": "ncc build lib/post.js --out dist/post --source-map --license license.txt",
     "clean": "rm -rf dist lib",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
