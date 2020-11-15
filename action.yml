@@ -2,13 +2,18 @@ name: 'Your name here'
 description: 'Provide a description here'
 author: 'Your name or organization here'
 inputs:
+  labelRequested:
+    description: The name of the label used to facilitate control and represent .....
+    required: true
+  labelQueued:
+    description: The name of the label used to facilitate control and represent .....
+    required: true
+  labelRunning:
+    description: The name of the label used to facilitate control and represent ownership of the lock.
+    required: true
   GITHUB_TOKEN:
     description: 'Github token'
     required: true
-  milliseconds: # change this
-    required: true
-    description: 'input description here'
-    default: 'default value if applicable'
 runs:
   using: 'node12'
   main: 'dist/index.js'

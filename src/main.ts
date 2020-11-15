@@ -1,18 +1,16 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { inspect } from 'util'
-import { wait } from './wait'
 
 async function run(): Promise<void> {
     try {
-        const ms: string = core.getInput('milliseconds')
-        core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
+        const labelRequested = core.getInput('labelRequested');
+        const labelQueued = core.getInput('labelQueued');
+        const labelRunning = core.getInput('labelRunning');
 
         core.debug(new Date().toTimeString())
-        await wait(parseInt(ms, 10))
-        core.debug(new Date().toTimeString())
 
-        core.setOutput('time', new Date().toTimeString())
+        core.setOutput('Time', new Date().toTimeString())
 
         const token = core.getInput('GITHUB_TOKEN');
         // core.info(token);
