@@ -26,6 +26,7 @@ async function run(): Promise<void> {
         const token = core.getInput('GITHUB_TOKEN');
         // core.info(token);
         const octokit = github.getOctokit(token);
+        core.debug(`getting pull request with label ${labelRequested}`);
         // const prs = await octokit.search.issuesAndPullRequests({q:'is:pr+is:open+label:e2e:request'});
         const prs = await octokit.search.issuesAndPullRequests({ q: 'is:pr+label:e2e:request' });
         core.debug(JSON.stringify(prs.data.items));
@@ -55,14 +56,14 @@ async function run(): Promise<void> {
         // });
         // core.info(`update statis: ${updated.status}`);
 
-        async function findByLabel(label: string) {
-            octokit.pulls.
-            const pulls = await octokit.pulls.list({
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
+        // async function findByLabel(label: string) {
+        //     octokit.pulls.
+        //     const pulls = await octokit.pulls.list({
+        //         owner: github.context.repo.owner,
+        //         repo: github.context.repo.repo,
 
-            });
-        }
+        //     });
+        // }
     } catch (error) {
         // HttpError
         core.error(`error occured: ${error.message}`);
