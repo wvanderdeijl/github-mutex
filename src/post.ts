@@ -36,7 +36,9 @@ async function run(): Promise<void> {
         const luckyOne = queued[Math.floor(Math.random() * queued.length)];
         core.debug(`going to start pull request ${luckyOne.number} out of candidates: ${JSON.stringify(queued.map(p => p.number))}`)
         // TODO: use other token so this triggers action
-        await switchLabel(luckyOne, labelQueued, labelRequested);
+        const token = core.getInput('PERSONAL_TOKEN');
+        const octokit = github.getOctokit(token);
+        await switchLabel(luckyOne, labelQueued, labelRequested, octokit);
     } catch (error) {
         // HttpError
         core.error(`error occured: ${error.message}`);

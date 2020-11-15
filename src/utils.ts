@@ -36,9 +36,9 @@ export async function removeLabel(prNumber: number, label: string) {
     })
 }
 
-export async function switchLabel(pr: { number: number, labels: Array<{ name: string }> }, from: string, to: string) {
+export async function switchLabel(pr: { number: number, labels: Array<{ name: string }> }, from: string, to: string, client = octokit) {
     core.debug(`removing label ${from} and adding label ${to} for pull request ${pr.number}`)
-    await octokit.issues.setLabels({
+    await client.issues.setLabels({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         issue_number: pr.number,

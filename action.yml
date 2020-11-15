@@ -14,6 +14,10 @@ inputs:
   GITHUB_TOKEN:
     description: 'Github token'
     required: true
+  # https://github.com/settings/tokens with repo scope
+  PERSONAL_TOKEN:
+    description: 'Github Personal Access Token with repo scope'
+    required: true
 runs:
   using: 'node12'
   main: 'dist/main/index.js'

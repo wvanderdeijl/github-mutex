@@ -40,7 +40,9 @@ async function run() {
         const luckyOne = queued[Math.floor(Math.random() * queued.length)];
         core.debug(`going to start pull request ${luckyOne.number} out of candidates: ${JSON.stringify(queued.map(p => p.number))}`);
         // TODO: use other token so this triggers action
-        await utils_1.switchLabel(luckyOne, labelQueued, labelRequested);
+        const token = core.getInput('PERSONAL_TOKEN');
+        const octokit = github.getOctokit(token);
+        await utils_1.switchLabel(luckyOne, labelQueued, labelRequested, octokit);
     }
     catch (error) {
         // HttpError
@@ -96,9 +98,9 @@ async function removeLabel(prNumber, label) {
     });
 }
 exports.removeLabel = removeLabel;
-async function switchLabel(pr, from, to) {
+async function switchLabel(pr, from, to, client = octokit) {
     core.debug(`removing label ${from} and adding label ${to} for pull request ${pr.number}`);
-    await octokit.issues.setLabels({
+    await client.issues.setLabels({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         issue_number: pr.number,
