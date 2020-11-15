@@ -19,9 +19,8 @@ async function run(): Promise<void> {
             core.debug(`nothing to do for action ${github.context.action} with label ${payload.label?.name}`);
         }
 
-        core.debug(new Date().toTimeString())
-
-        core.setOutput('Time', new Date().toTimeString())
+        core.debug(JSON.stringify(github.context, undefined, 4));
+        // core.setOutput('Time', new Date().toTimeString())
 
         const token = core.getInput('GITHUB_TOKEN');
         const octokit = github.getOctokit(token);
@@ -29,53 +28,38 @@ async function run(): Promise<void> {
         const running = await findPullRequestsByLabel(labelRunning);
         core.debug(`PR's that currently have label ${labelRunning}: ${running.map(v => v.number)}`)
         if (running.length) {
+            core.debug('found PR that is already running; queue this PR');
             core.debug(`replacing label ${labelRequested} with ${labelQueued} for PR ${payload.pull_request.number}`);
-            await octokit.issues.setLabels({
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-                issue_number: payload.pull_request.number,
-                labels: [
-                    ...payload.pull_request.labels.map(l => l.name).filter(l => l !== labelRequested),
-                    labelQueued,
-                ],
-            })
+            await switchLabel(labelRequested, labelQueued);
         } else {
-
+            await switchLabel(labelRequested, labelRunning);
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            const newRunning = await findPullRequestsByLabel(labelRunning);
+            if (!(newRunning.length === 1 && newRunning[0].number === payload.pull_request.number)) {
+                // race condition as other PR has also changed to running
+                await switchLabel(labelRunning, labelQueued);
+                // TODO: fail or output?
+                return;
+            }
+            // TODO: continue with job
+            // TODO: post-action
         }
-
-        // const prs = await octokit.search.issuesAndPullRequests({q:'is:pr+is:open+label:e2e:request'});
-        const prs = await octokit.search.issuesAndPullRequests({ q: `is:pr+label:${labelRequested}` });
-        core.debug(JSON.stringify(prs.data.items, undefined, 4));
-        // const pulls = await octokit.pulls.list({
-        //     owner: github.context.repo.owner,
-        //     repo: github.context.repo.repo,
-        // });
-        // core.info(JSON.stringify(pulls.data, undefined, 4));
-        const pr = await octokit.pulls.get({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            pull_number: 1,
-        });
-        const etag = pr.headers.etag;
-        core.info(`etag: ${etag}`);
-        // core.info(JSON.stringify(pr.headers, undefined, 4));
-        // core.info(JSON.stringify(pr.data, undefined, 4));
-        // using `If-Match` with wrong etag will respond with http error 412
-        // const updated = await octokit.pulls.update({
-        //     owner: github.context.repo.owner,
-        //     repo: github.context.repo.repo,
-        //     pull_number: 1,
-        //     title: new Date().toISOString(),
-        //     // headers: {
-        //     //     'If-Match': etag,
-        //     // },
-        // });
-        // core.info(`update statis: ${updated.status}`);
 
         async function findPullRequestsByLabel(label: string) {
             core.debug(`getting pull request with label ${label}`);
             const prs = await octokit.search.issuesAndPullRequests({ q: `is:pr+label:${label}` });
             return prs.data.items;
+        }
+        async function switchLabel(from: string, to: string) {
+            await octokit.issues.setLabels({
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                issue_number: payload.pull_request.number,
+                labels: [
+                    ...payload.pull_request.labels.map(l => l.name).filter(l => l !== from),
+                    to,
+                ],
+            })
         }
 
     } catch (error) {

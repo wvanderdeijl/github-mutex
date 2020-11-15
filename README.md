@@ -15,7 +15,7 @@ action runs:
 - search for `e2e:running`
 - if `e2e:running` found -> update this pr to `e2e:queued` and stop
 - if no `e2e:running` found:
-  - update this per to `e2e:running`
+  - update this pr to `e2e:running`
   - wait couple of seconds, verify if we are still the only one running, if not update to `e2e:queued` and abort
   - continue with job (that runs e2e)
   - post action:
