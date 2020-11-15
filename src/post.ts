@@ -3,6 +3,7 @@ import * as github from '@actions/github'
 import { EventPayloads, WebhookEvent, WebhookEvents } from '@octokit/webhooks'
 import type { EventTypesPayload } from '@octokit/webhooks/dist-types/generated/get-webhook-payload-type-from-event'
 import { inspect } from 'util'
+import { findPullRequestsByLabel, getLabeledPayload, removeLabel, STATE_TOKEN, switchLabel } from './utils'
 
 async function run(): Promise<void> {
     try {
@@ -10,16 +11,30 @@ async function run(): Promise<void> {
         const labelQueued = core.getInput('labelQueued');
         const labelRunning = core.getInput('labelRunning');
 
-        // core.info(JSON.stringify(github.context, undefined, 4));
-        if (github.context.payload.action !== 'labeled') {
-            core.debug(`nothing to do for action ${github.context.action}`);
+        if (core.getState(STATE_TOKEN) !== 'true') {
+            core.debug(`state was not transitioned to running; no post action to perform`);
+            return;
         }
-        const payload = github.context.payload as EventPayloads.WebhookPayloadPullRequest;
-        if (payload.label?.name !== labelRequested) {
-            core.debug(`nothing to do for action ${github.context.action} with label ${payload.label?.name}`);
+        const payload = getLabeledPayload(labelRequested);
+        if (!payload) {
+            // TODO: log label?
+            core.debug(`nothing to do for action ${github.context.action}`);
+            return;
         }
 
-        core.debug(JSON.stringify(github.context, undefined, 4));
+        await removeLabel(payload.pull_request.number, labelRunning);
+
+        if ((await findPullRequestsByLabel(labelRequested)).length) {
+            // let request PR pick its spot
+            return;
+        }
+        const queued = await findPullRequestsByLabel(labelQueued);
+        if (!queued.length) {
+            return;
+        }
+        const luckyOne = queued[Math.floor(Math.random() * queued.length)];
+        // TODO: use other token so this triggers action
+        await switchLabel(luckyOne, labelQueued, labelRequested);
     } catch (error) {
         // HttpError
         core.error(`error occured: ${error.message}`);
