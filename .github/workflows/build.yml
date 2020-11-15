@@ -1,8 +1,7 @@
 name: 'example'
-on:
-  pull_request:
-    types:
-      - labeled
+on: # rebuild any PRs and pushes
+  - pull_request
+  - push
 
 jobs:
   build: # make sure build/ci work properly
