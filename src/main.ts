@@ -4,6 +4,9 @@ import { EventPayloads, WebhookEvent, WebhookEvents } from '@octokit/webhooks'
 import type { EventTypesPayload } from '@octokit/webhooks/dist-types/generated/get-webhook-payload-type-from-event'
 import { inspect } from 'util'
 
+// core.saveState("pidToKill", 12345);
+// var pid = core.getState("pidToKill");
+
 async function run(): Promise<void> {
     try {
         const labelRequested = core.getInput('labelRequested');

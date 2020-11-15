@@ -11,6 +11,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __webpack_require__(186);
 const github = __webpack_require__(438);
 const util_1 = __webpack_require__(669);
+// core.saveState("pidToKill", 12345);
+// var pid = core.getState("pidToKill");
 async function run() {
     var _a, _b;
     try {
