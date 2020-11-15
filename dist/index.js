@@ -12,10 +12,18 @@ const core = __webpack_require__(186);
 const github = __webpack_require__(438);
 const util_1 = __webpack_require__(669);
 async function run() {
+    var _a, _b;
     try {
         const labelRequested = core.getInput('labelRequested');
         const labelQueued = core.getInput('labelQueued');
         const labelRunning = core.getInput('labelRunning');
+        if (github.context.action !== 'labeled') {
+            core.debug(`nothing to do for action ${github.context.action}`);
+        }
+        const payload = github.context.payload;
+        if (((_a = payload.label) === null || _a === void 0 ? void 0 : _a.name) !== labelRequested) {
+            core.debug(`nothing to do for action ${github.context.action} with label ${(_b = payload.label) === null || _b === void 0 ? void 0 : _b.name}`);
+        }
         core.debug(new Date().toTimeString());
         core.setOutput('Time', new Date().toTimeString());
         const token = core.getInput('GITHUB_TOKEN');
