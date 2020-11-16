@@ -18,17 +18,24 @@ export type PullRequest = EventPayloads.WebhookPayloadPullRequestPullRequest;
 export function getRunRequestedPayload(): PullRequest | undefined {
     const action = github.context.payload.action;
     if (action == null) {
+        core.warning('could not find type of action in payload');
         return;
     }
     if (action !== 'labeled' && action !== 'unlabeled') {
-        core.warning(`triggerd by action '${action}' while this should only be configured for ...`);
+        core.warning(`triggered by action '${action}' while this should only be configured for ...`);
         return;
     }
     const payload = github.context.payload as EventPayloads.WebhookPayloadPullRequest;
     const { label } = payload;
     if (label == null) {
+        core.warning('could not find label in action payload');
         return;
     }
+    core.debug(
+        `action ${action} for label ${label.name} in pr ${
+            payload.pull_request.number
+        } with labels ${payload.pull_request.labels.map((l) => l.name).join(',')}`
+    );
     if (
         (action === 'labeled' && label.name === labelRequested) ||
         (action === 'unlabeled' &&

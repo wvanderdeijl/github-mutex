@@ -15,11 +15,12 @@ const utils_1 = __webpack_require__(918);
 // core.saveState("pidToKill", 12345);
 // var pid = core.getState("pidToKill");
 async function run() {
+    var _a;
     try {
         const pr = utils_1.getRunRequestedPayload();
         if (pr == null) {
             // TODO: log label?
-            core.debug(`nothing to do for action ${github.context.action}`);
+            core.debug(`nothing to do for action ${(_a = github.context.payload.action) !== null && _a !== void 0 ? _a : 'unknown'}`);
             return;
         }
         let running = await utils_1.findRunningPullRequests();
@@ -77,17 +78,20 @@ const octokit = github.getOctokit(token);
 function getRunRequestedPayload() {
     const action = github.context.payload.action;
     if (action == null) {
+        core.warning('could not find type of action in payload');
         return;
     }
     if (action !== 'labeled' && action !== 'unlabeled') {
-        core.warning(`triggerd by action '${action}' while this should only be configured for ...`);
+        core.warning(`triggered by action '${action}' while this should only be configured for ...`);
         return;
     }
     const payload = github.context.payload;
     const { label } = payload;
     if (label == null) {
+        core.warning('could not find label in action payload');
         return;
     }
+    core.debug(`action ${action} for label ${label.name} in pr ${payload.pull_request.number} with labels ${payload.pull_request.labels.map((l) => l.name).join(',')}`);
     if ((action === 'labeled' && label.name === labelRequested) ||
         (action === 'unlabeled' &&
             label.name === labelRunning &&

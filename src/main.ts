@@ -11,7 +11,7 @@ async function run(): Promise<void> {
         const pr = getRunRequestedPayload();
         if (pr == null) {
             // TODO: log label?
-            core.debug(`nothing to do for action ${github.context.action}`);
+            core.debug(`nothing to do for action ${github.context.payload.action ?? 'unknown'}`);
             return;
         }
 
