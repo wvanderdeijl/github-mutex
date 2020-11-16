@@ -5,54 +5,92 @@ import { SearchIssuesAndPullRequestsResponseData } from '@octokit/types';
 
 export const STATE_TOKEN = 'github-mutex-started';
 
+const labelRequested = core.getInput('labelRequested');
+const labelQueued = core.getInput('labelQueued');
+const labelRunning = core.getInput('labelRunning');
+const STATE_LABELS = [labelQueued, labelRunning];
+
 const token = core.getInput('GITHUB_TOKEN');
 const octokit = github.getOctokit(token);
 
-export function getLabeledPayload(label: string): EventPayloads.WebhookPayloadPullRequest | undefined {
-    if (github.context.payload.action !== 'labeled') {
-        core.debug(`nothing to do for action ${github.context.action}`);
+export type PullRequest = EventPayloads.WebhookPayloadPullRequestPullRequest;
+
+export function getRunRequestedPayload(): PullRequest | undefined {
+    const action = github.context.payload.action;
+    if (action == null) {
+        return;
+    }
+    if (action !== 'labeled' && action !== 'unlabeled') {
+        core.warning(`triggerd by action '${action}' while this should only be configured for ...`);
         return;
     }
     const payload = github.context.payload as EventPayloads.WebhookPayloadPullRequest;
-    if (payload.label?.name != null && payload.label?.name !== label) {
-        core.debug(`nothing to do for action ${github.context.action} with label ${payload.label?.name}`);
+    const { label } = payload;
+    if (label == null) {
         return;
     }
-    return payload;
+    if (
+        (action === 'labeled' && label.name === labelRequested) ||
+        (action === 'unlabeled' &&
+            label.name === labelRunning &&
+            payload.pull_request.labels.find((l) => l.name === labelRequested) != null)
+    ) {
+        return payload.pull_request;
+    }
 }
 
-export async function findPullRequestsByLabel(
-    label: string
-): Promise<SearchIssuesAndPullRequestsResponseData['items']> {
-    core.debug(`getting pull request with label ${label}`);
-    const prs = await octokit.search.issuesAndPullRequests({ q: `is:pr+label:${label}` });
-    core.debug(
-        `pull requests that currently have label ${label}: ${JSON.stringify(prs.data.items.map((v) => v.number))}`
-    );
+export async function findRunningPullRequests(): Promise<SearchIssuesAndPullRequestsResponseData['items']> {
+    // TODO: querystring encoding
+    return await findPullRequests(`label:${labelRunning}`);
+}
+
+export async function findQueuedPullRequests(): Promise<SearchIssuesAndPullRequestsResponseData['items']> {
+    // TODO: querystring encoding
+    return await findPullRequests(`label:${labelRequested}+label:${labelQueued}`);
+}
+
+async function findPullRequests(query: string): Promise<SearchIssuesAndPullRequestsResponseData['items']> {
+    // TODO: querystring encoding
+    const q = `is:pr+${query}`;
+    core.debug(`getting pull request with query ${q}`);
+    const prs = await octokit.search.issuesAndPullRequests({ q });
+    core.debug(`found pull requests: ${JSON.stringify(prs.data.items.map((v) => v.number))}`);
     return prs.data.items;
 }
 
-export async function removeLabel(prNumber: number, label: string): Promise<void> {
-    core.debug(`removing label ${label} from ${prNumber}`);
+export async function markQueued(pr: PullRequest): Promise<void> {
+    await markState(pr, labelQueued);
+}
+
+export async function markRunning(pr: PullRequest): Promise<void> {
+    await markState(pr, labelRunning);
+}
+
+export async function markCompleted(pr: PullRequest): Promise<void> {
+    await octokit.issues.removeLabel({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: pr.number,
+        name: labelRunning,
+    });
+}
+
+export async function resubmit(prNumber: number): Promise<void> {
+    const token = core.getInput('PERSONAL_TOKEN');
+    const octokit = github.getOctokit(token);
     await octokit.issues.removeLabel({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         issue_number: prNumber,
-        name: label,
+        name: labelQueued,
     });
 }
 
-export async function switchLabel(
-    pr: { number: number; labels: Array<{ name: string }> },
-    from: string,
-    to: string,
-    client = octokit
-): Promise<void> {
-    core.debug(`removing label ${from} and adding label ${to} for pull request ${pr.number}`);
-    await client.issues.setLabels({
+async function markState(pr: PullRequest, label: string): Promise<void> {
+    await octokit.issues.setLabels({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         issue_number: pr.number,
-        labels: [...pr.labels.map((l) => l.name).filter((l) => l !== from), to],
+        labels: [...pr.labels.map((l) => l.name).filter((l) => !STATE_LABELS.includes(l)), label],
     });
 }

@@ -1,46 +1,32 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { inspect } from 'util';
-import { findPullRequestsByLabel, getLabeledPayload, removeLabel, STATE_TOKEN, switchLabel } from './utils';
+import { findQueuedPullRequests, getRunRequestedPayload, markCompleted, resubmit, STATE_TOKEN } from './utils';
 
 async function run(): Promise<void> {
     try {
-        const labelRequested = core.getInput('labelRequested');
-        const labelQueued = core.getInput('labelQueued');
-        const labelRunning = core.getInput('labelRunning');
-
         if (core.getState(STATE_TOKEN) !== 'true') {
             core.debug(`state was not transitioned to running; no post action to perform`);
             return;
         }
-        const payload = getLabeledPayload(labelRequested);
-        if (payload == null) {
+        // TODO: get from state??
+        const pr = getRunRequestedPayload();
+        if (pr == null) {
             // TODO: log label?
             core.debug(`nothing to do in post for action ${github.context.action}`);
             return;
         }
 
-        await removeLabel(payload.pull_request.number, labelRunning);
+        await markCompleted(pr);
 
-        if ((await findPullRequestsByLabel(labelRequested)).length > 0) {
-            core.debug(`pull requests found with label ${labelRequested}; let them pick next winner`);
-            return;
-        }
-        const queued = await findPullRequestsByLabel(labelQueued);
+        const queued = await findQueuedPullRequests();
         if (queued.length === 0) {
-            core.debug(`no pull requests with label ${labelQueued}, so no next candidate`);
+            core.debug(`no queued pull requests found`);
             return;
         }
         const luckyOne = queued[Math.floor(Math.random() * queued.length)];
-        core.debug(
-            `going to start pull request ${luckyOne.number} out of candidates: ${JSON.stringify(
-                queued.map((p) => p.number)
-            )}`
-        );
-        // TODO: use other token so this triggers action
-        const token = core.getInput('PERSONAL_TOKEN');
-        const octokit = github.getOctokit(token);
-        await switchLabel(luckyOne, labelQueued, labelRequested, octokit);
+        core.debug(`going to start pull request ${luckyOne.number} out of candidates: ${stringifyNumbers(queued)}`);
+        await resubmit(luckyOne.number);
     } catch (error) {
         // HttpError
         // core.error(`error occured: ${error.message}`);
@@ -53,3 +39,7 @@ run().catch((e) => {
     console.error(e);
     process.exit(1);
 });
+
+function stringifyNumbers(prs: Array<{ number: number }>): string {
+    return JSON.stringify(prs.map((p) => p.number));
+}
