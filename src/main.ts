@@ -1,9 +1,7 @@
-import * as core from '@actions/core'
-import * as github from '@actions/github'
-import { EventPayloads, WebhookEvent, WebhookEvents } from '@octokit/webhooks'
-import type { EventTypesPayload } from '@octokit/webhooks/dist-types/generated/get-webhook-payload-type-from-event'
-import { inspect } from 'util'
-import { findPullRequestsByLabel, getLabeledPayload, STATE_TOKEN, switchLabel } from './utils'
+import * as core from '@actions/core';
+import * as github from '@actions/github';
+import { inspect } from 'util';
+import { findPullRequestsByLabel, getLabeledPayload, STATE_TOKEN, switchLabel } from './utils';
 
 // core.saveState("pidToKill", 12345);
 // var pid = core.getState("pidToKill");
@@ -15,7 +13,7 @@ async function run(): Promise<void> {
         const labelRunning = core.getInput('labelRunning');
 
         const payload = getLabeledPayload(labelRequested);
-        if (!payload) {
+        if (payload == null) {
             // TODO: log label?
             core.debug(`nothing to do for action ${github.context.action}`);
             return;
@@ -28,14 +26,14 @@ async function run(): Promise<void> {
         // const octokit = github.getOctokit(token);
 
         const running = await findPullRequestsByLabel(labelRunning);
-        if (running.length) {
+        if (running.length > 0) {
             core.debug('found PR that is already running; queue this PR');
             core.debug(`replacing label ${labelRequested} with ${labelQueued} for PR ${payload.pull_request.number}`);
             await switchLabel(payload.pull_request, labelRequested, labelQueued);
             core.setFailed('found other running pull requests');
         } else {
             await switchLabel(payload.pull_request, labelRequested, labelRunning);
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            await new Promise((resolve) => setTimeout(resolve, 5000));
             const newRunning = await findPullRequestsByLabel(labelRunning);
             if (!(newRunning.length === 1 && newRunning[0].number === payload.pull_request.number)) {
                 // race condition as other PR has also changed to running
@@ -47,12 +45,15 @@ async function run(): Promise<void> {
             // TODO: post-action
             core.saveState(STATE_TOKEN, 'true');
         }
-    } catch (error) {
+    } catch (error: unknown) {
         // HttpError
-        core.error(`error occured: ${error.message}`);
+        // core.error(`error occured: ${error.message}`);
         core.error(inspect(error));
-        core.setFailed(error)
+        core.setFailed(error instanceof Error ? error : `unknown error: ${String(error)}`);
     }
 }
 
-run();
+run().catch((e) => {
+    console.error(e);
+    process.exit(1);
+});

@@ -20,7 +20,7 @@ async function run() {
         const labelQueued = core.getInput('labelQueued');
         const labelRunning = core.getInput('labelRunning');
         const payload = utils_1.getLabeledPayload(labelRequested);
-        if (!payload) {
+        if (payload == null) {
             // TODO: log label?
             core.debug(`nothing to do for action ${github.context.action}`);
             return;
@@ -30,7 +30,7 @@ async function run() {
         // const token = core.getInput('GITHUB_TOKEN');
         // const octokit = github.getOctokit(token);
         const running = await utils_1.findPullRequestsByLabel(labelRunning);
-        if (running.length) {
+        if (running.length > 0) {
             core.debug('found PR that is already running; queue this PR');
             core.debug(`replacing label ${labelRequested} with ${labelQueued} for PR ${payload.pull_request.number}`);
             await utils_1.switchLabel(payload.pull_request, labelRequested, labelQueued);
@@ -38,7 +38,7 @@ async function run() {
         }
         else {
             await utils_1.switchLabel(payload.pull_request, labelRequested, labelRunning);
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            await new Promise((resolve) => setTimeout(resolve, 5000));
             const newRunning = await utils_1.findPullRequestsByLabel(labelRunning);
             if (!(newRunning.length === 1 && newRunning[0].number === payload.pull_request.number)) {
                 // race condition as other PR has also changed to running
@@ -53,12 +53,15 @@ async function run() {
     }
     catch (error) {
         // HttpError
-        core.error(`error occured: ${error.message}`);
+        // core.error(`error occured: ${error.message}`);
         core.error(util_1.inspect(error));
-        core.setFailed(error);
+        core.setFailed(error instanceof Error ? error : `unknown error: ${String(error)}`);
     }
 }
-run();
+run().catch((e) => {
+    console.error(e);
+    process.exit(1);
+});
 //# sourceMappingURL=main.js.map
 
 /***/ }),
@@ -70,20 +73,20 @@ run();
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.switchLabel = exports.removeLabel = exports.findPullRequestsByLabel = exports.getLabeledPayload = exports.STATE_TOKEN = void 0;
-const github = __webpack_require__(438);
 const core = __webpack_require__(186);
+const github = __webpack_require__(438);
 exports.STATE_TOKEN = 'github-mutex-started';
 const token = core.getInput('GITHUB_TOKEN');
 const octokit = github.getOctokit(token);
 function getLabeledPayload(label) {
-    var _a, _b;
+    var _a, _b, _c;
     if (github.context.payload.action !== 'labeled') {
         core.debug(`nothing to do for action ${github.context.action}`);
         return;
     }
     const payload = github.context.payload;
-    if (((_a = payload.label) === null || _a === void 0 ? void 0 : _a.name) !== label) {
-        core.debug(`nothing to do for action ${github.context.action} with label ${(_b = payload.label) === null || _b === void 0 ? void 0 : _b.name}`);
+    if (((_a = payload.label) === null || _a === void 0 ? void 0 : _a.name) != null && ((_b = payload.label) === null || _b === void 0 ? void 0 : _b.name) !== label) {
+        core.debug(`nothing to do for action ${github.context.action} with label ${(_c = payload.label) === null || _c === void 0 ? void 0 : _c.name}`);
         return;
     }
     return payload;
@@ -92,7 +95,7 @@ exports.getLabeledPayload = getLabeledPayload;
 async function findPullRequestsByLabel(label) {
     core.debug(`getting pull request with label ${label}`);
     const prs = await octokit.search.issuesAndPullRequests({ q: `is:pr+label:${label}` });
-    core.debug(`pull requests that currently have label ${label}: ${JSON.stringify(prs.data.items.map(v => v.number))}`);
+    core.debug(`pull requests that currently have label ${label}: ${JSON.stringify(prs.data.items.map((v) => v.number))}`);
     return prs.data.items;
 }
 exports.findPullRequestsByLabel = findPullRequestsByLabel;
@@ -112,10 +115,7 @@ async function switchLabel(pr, from, to, client = octokit) {
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         issue_number: pr.number,
-        labels: [
-            ...pr.labels.map(l => l.name).filter(l => l !== from),
-            to,
-        ],
+        labels: [...pr.labels.map((l) => l.name).filter((l) => l !== from), to],
     });
 }
 exports.switchLabel = switchLabel;

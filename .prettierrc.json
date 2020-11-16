@@ -1,0 +1,14 @@
+{
+    "overrides": [
+        {
+            "files": "*.ts",
+            "options": {
+                "parser": "typescript"
+            }
+        }
+    ],
+    "printWidth": 120,
+    "quoteProps": "consistent",
+    "singleQuote": true,
+    "tabWidth": 4
+}

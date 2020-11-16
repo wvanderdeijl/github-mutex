@@ -2,23 +2,23 @@ name: 'Your name here'
 description: 'Provide a description here'
 author: 'Your name or organization here'
 inputs:
-  labelRequested:
-    description: The name of the label used to facilitate control and represent .....
-    required: true
-  labelQueued:
-    description: The name of the label used to facilitate control and represent .....
-    required: true
-  labelRunning:
-    description: The name of the label used to facilitate control and represent ownership of the lock.
-    required: true
-  GITHUB_TOKEN:
-    description: 'Github token'
-    required: true
-  # https://github.com/settings/tokens with repo scope
-  PERSONAL_TOKEN:
-    description: 'Github Personal Access Token with repo scope'
-    required: true
+    labelRequested:
+        description: The name of the label used to facilitate control and represent .....
+        required: true
+    labelQueued:
+        description: The name of the label used to facilitate control and represent .....
+        required: true
+    labelRunning:
+        description: The name of the label used to facilitate control and represent ownership of the lock.
+        required: true
+    GITHUB_TOKEN:
+        description: 'Github token'
+        required: true
+    # https://github.com/settings/tokens with repo scope
+    PERSONAL_TOKEN:
+        description: 'Github Personal Access Token with repo scope'
+        required: true
 runs:
-  using: 'node12'
-  main: 'dist/main/index.js'
-  post: 'dist/post/index.js'
+    using: 'node12'
+    main: 'dist/main/index.js'
+    post: 'dist/post/index.js'
