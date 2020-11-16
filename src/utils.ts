@@ -13,6 +13,9 @@ const STATE_LABELS = [labelQueued, labelRunning];
 const token = core.getInput('GITHUB_TOKEN');
 const octokit = github.getOctokit(token);
 
+// octokit.checks.create()
+// see https://github.com/qawolf/actions-test/blob/master/.github/actions/create-status-check/index.js#L15-L27
+
 export type PullRequest = EventPayloads.WebhookPayloadPullRequestPullRequest;
 
 export function getRunRequestedPayload(): PullRequest | undefined {
