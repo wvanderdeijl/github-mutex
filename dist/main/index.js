@@ -5829,7 +5829,8 @@ async function run() {
             }
             // TODO: continue with job
             // TODO: post-action
-            core.saveState(utils_1.STATE_TOKEN, 'true');
+            core.saveState(utils_1.OUTPUT_RUN, 'true');
+            core.setOutput(utils_1.OUTPUT_RUN, 'true');
         }
     }
     catch (error) {
@@ -5853,10 +5854,10 @@ run().catch((e) => {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.resubmit = exports.markCompleted = exports.markRunning = exports.markQueued = exports.findQueuedPullRequests = exports.findRunningPullRequests = exports.getRunRequestedPayload = exports.STATE_TOKEN = void 0;
+exports.resubmit = exports.markCompleted = exports.markRunning = exports.markQueued = exports.findQueuedPullRequests = exports.findRunningPullRequests = exports.getRunRequestedPayload = exports.OUTPUT_RUN = void 0;
 const core = __webpack_require__(186);
 const github = __webpack_require__(438);
-exports.STATE_TOKEN = 'github-mutex-started';
+exports.OUTPUT_RUN = 'run';
 const labelRequested = core.getInput('labelRequested');
 const labelQueued = core.getInput('labelQueued');
 const labelRunning = core.getInput('labelRunning');
