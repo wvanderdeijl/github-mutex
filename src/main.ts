@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { inspect } from 'util';
-import { findRunningPullRequests, getRunRequestedPayload, markQueued, markRunning, STATE_TOKEN } from './utils';
+import { findRunningPullRequests, getRunRequestedPayload, markQueued, markRunning, OUTPUT_RUN } from './utils';
 
 // core.saveState("pidToKill", 12345);
 // var pid = core.getState("pidToKill");
@@ -32,7 +32,8 @@ async function run(): Promise<void> {
             }
             // TODO: continue with job
             // TODO: post-action
-            core.saveState(STATE_TOKEN, 'true');
+            core.saveState(OUTPUT_RUN, 'true');
+            core.setOutput(OUTPUT_RUN, 'true');
         }
     } catch (error: unknown) {
         // HttpError

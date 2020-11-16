@@ -3,15 +3,16 @@ import * as github from '@actions/github';
 import { EventPayloads } from '@octokit/webhooks';
 import { SearchIssuesAndPullRequestsResponseData } from '@octokit/types';
 
-export const STATE_TOKEN = 'github-mutex-started';
+export const OUTPUT_RUN = 'run';
 
 const labelRequested = core.getInput('labelRequested');
 const labelQueued = core.getInput('labelQueued');
 const labelRunning = core.getInput('labelRunning');
 const STATE_LABELS = [labelQueued, labelRunning];
+const ALL_LABELS = [labelRequested, ...STATE_LABELS];
 
-const token = core.getInput('GITHUB_TOKEN');
-const octokit = github.getOctokit(token);
+const octokit = github.getOctokit(core.getInput('GITHUB_TOKEN'));
+const personalOctokit = github.getOctokit(core.getInput('PERSONAL_TOKEN'));
 
 // octokit.checks.create()
 // see https://github.com/qawolf/actions-test/blob/master/.github/actions/create-status-check/index.js#L15-L27
@@ -76,26 +77,6 @@ export async function markRunning(pr: PullRequest): Promise<void> {
     await markState(pr, labelRunning);
 }
 
-export async function markCompleted(pr: PullRequest): Promise<void> {
-    await octokit.issues.removeLabel({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        issue_number: pr.number,
-        name: labelRunning,
-    });
-}
-
-export async function resubmit(prNumber: number): Promise<void> {
-    const token = core.getInput('PERSONAL_TOKEN');
-    const octokit = github.getOctokit(token);
-    await octokit.issues.removeLabel({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        issue_number: prNumber,
-        name: labelQueued,
-    });
-}
-
 async function markState(pr: PullRequest, label: string): Promise<void> {
     await octokit.issues.setLabels({
         owner: github.context.repo.owner,
@@ -104,3 +85,43 @@ async function markState(pr: PullRequest, label: string): Promise<void> {
         labels: [...pr.labels.map((l) => l.name).filter((l) => !STATE_LABELS.includes(l)), label],
     });
 }
+
+export async function markCompleted(pr: PullRequest): Promise<void> {
+    await octokit.issues.setLabels({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: pr.number,
+        labels: [...pr.labels.map((l) => l.name).filter((l) => !ALL_LABELS.includes(l))],
+    });
+}
+
+export async function resubmit(prNumber: number): Promise<void> {
+    await personalOctokit.issues.removeLabel({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: prNumber,
+        name: labelQueued,
+    });
+}
+
+// export async function triggerWorkflow(pr: PullRequest): Promise<void> {
+//     const workflowName = 'e2e';
+//     // paginate ??
+//     const workflows = await octokit.actions.listRepoWorkflows({
+//         owner: github.context.repo.owner,
+//         repo: github.context.repo.repo,
+//     });
+//     core.debug(JSON.stringify(workflows.data, undefined, 4));
+//     const workflow = workflows.data.workflows.find((w) => w.name === workflowName);
+//     if (workflow == null) {
+//         throw new Error(`missing workflow ${workflowName}`);
+//     }
+//     // refs/heads/featureA
+//     // refs/sha
+//     await personalOctokit.actions.createWorkflowDispatch({
+//         owner: github.context.repo.owner,
+//         repo: github.context.repo.repo,
+//         ref: `refs/heads/${pr.head.ref}`,
+//         workflow_id: workflow.id,
+//     });
+// }

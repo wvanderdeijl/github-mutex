@@ -1,11 +1,11 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { inspect } from 'util';
-import { findQueuedPullRequests, getRunRequestedPayload, markCompleted, resubmit, STATE_TOKEN } from './utils';
+import { findQueuedPullRequests, getRunRequestedPayload, markCompleted, resubmit, OUTPUT_RUN } from './utils';
 
 async function run(): Promise<void> {
     try {
-        if (core.getState(STATE_TOKEN) !== 'true') {
+        if (core.getState(OUTPUT_RUN) !== 'true') {
             core.debug(`state was not transitioned to running; no post action to perform`);
             return;
         }

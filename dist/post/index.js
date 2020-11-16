@@ -5803,7 +5803,7 @@ const utils_1 = __webpack_require__(314);
 async function run() {
     var _a;
     try {
-        if (core.getState(utils_1.STATE_TOKEN) !== 'true') {
+        if (core.getState(utils_1.OUTPUT_RUN) !== 'true') {
             core.debug(`state was not transitioned to running; no post action to perform`);
             return;
         }
@@ -5848,16 +5848,17 @@ function stringifyNumbers(prs) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.resubmit = exports.markCompleted = exports.markRunning = exports.markQueued = exports.findQueuedPullRequests = exports.findRunningPullRequests = exports.getRunRequestedPayload = exports.STATE_TOKEN = void 0;
+exports.resubmit = exports.markCompleted = exports.markRunning = exports.markQueued = exports.findQueuedPullRequests = exports.findRunningPullRequests = exports.getRunRequestedPayload = exports.OUTPUT_RUN = void 0;
 const core = __webpack_require__(186);
 const github = __webpack_require__(438);
-exports.STATE_TOKEN = 'github-mutex-started';
+exports.OUTPUT_RUN = 'run';
 const labelRequested = core.getInput('labelRequested');
 const labelQueued = core.getInput('labelQueued');
 const labelRunning = core.getInput('labelRunning');
 const STATE_LABELS = [labelQueued, labelRunning];
-const token = core.getInput('GITHUB_TOKEN');
-const octokit = github.getOctokit(token);
+const ALL_LABELS = [labelRequested, ...STATE_LABELS];
+const octokit = github.getOctokit(core.getInput('GITHUB_TOKEN'));
+const personalOctokit = github.getOctokit(core.getInput('PERSONAL_TOKEN'));
 function getRunRequestedPayload() {
     const action = github.context.payload.action;
     if (action == null) {
@@ -5909,26 +5910,6 @@ async function markRunning(pr) {
     await markState(pr, labelRunning);
 }
 exports.markRunning = markRunning;
-async function markCompleted(pr) {
-    await octokit.issues.removeLabel({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        issue_number: pr.number,
-        name: labelRunning,
-    });
-}
-exports.markCompleted = markCompleted;
-async function resubmit(prNumber) {
-    const token = core.getInput('PERSONAL_TOKEN');
-    const octokit = github.getOctokit(token);
-    await octokit.issues.removeLabel({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        issue_number: prNumber,
-        name: labelQueued,
-    });
-}
-exports.resubmit = resubmit;
 async function markState(pr, label) {
     await octokit.issues.setLabels({
         owner: github.context.repo.owner,
@@ -5937,6 +5918,45 @@ async function markState(pr, label) {
         labels: [...pr.labels.map((l) => l.name).filter((l) => !STATE_LABELS.includes(l)), label],
     });
 }
+async function markCompleted(pr) {
+    await octokit.issues.setLabels({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: pr.number,
+        labels: [...pr.labels.map((l) => l.name).filter((l) => !ALL_LABELS.includes(l))],
+    });
+}
+exports.markCompleted = markCompleted;
+async function resubmit(prNumber) {
+    await personalOctokit.issues.removeLabel({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: prNumber,
+        name: labelQueued,
+    });
+}
+exports.resubmit = resubmit;
+// export async function triggerWorkflow(pr: PullRequest): Promise<void> {
+//     const workflowName = 'e2e';
+//     // paginate ??
+//     const workflows = await octokit.actions.listRepoWorkflows({
+//         owner: github.context.repo.owner,
+//         repo: github.context.repo.repo,
+//     });
+//     core.debug(JSON.stringify(workflows.data, undefined, 4));
+//     const workflow = workflows.data.workflows.find((w) => w.name === workflowName);
+//     if (workflow == null) {
+//         throw new Error(`missing workflow ${workflowName}`);
+//     }
+//     // refs/heads/featureA
+//     // refs/sha
+//     await personalOctokit.actions.createWorkflowDispatch({
+//         owner: github.context.repo.owner,
+//         repo: github.context.repo.repo,
+//         ref: `refs/heads/${pr.head.ref}`,
+//         workflow_id: workflow.id,
+//     });
+// }
 
 
 /***/ }),

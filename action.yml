@@ -21,4 +21,5 @@ inputs:
 runs:
     using: 'node12'
     main: 'dist/main/index.js'
+    # TODO: can we use post-if with `state`?
     post: 'dist/post/index.js'
