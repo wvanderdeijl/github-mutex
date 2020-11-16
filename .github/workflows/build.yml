@@ -14,16 +14,17 @@ jobs:
             - run: npm run package:post
             # - run: |
             #     npm run all
-    test: # make sure the action works on a clean machine without building
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v2
-            - uses: ./
-              id: my-action
-              with:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  labelRequested: e2e:request
-                  labelQueued: e2e:queued
-                  labelRunning: e2e:running
-            - name: Show result
-              run: echo "${{steps.my-action.outputs.time}}"
+    # test: # make sure the action works on a clean machine without building
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #         - uses: actions/checkout@v2
+    #         - uses: ./
+    #           id: my-action
+    #           with:
+    #               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #               PERSONAL_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+    #               labelRequested: e2e:request
+    #               labelQueued: e2e:queued
+    #               labelRunning: e2e:running
+    #         - name: Show result
+    #           run: echo "${{steps.my-action.outputs.time}}"
