@@ -1,4 +1,4 @@
-# github-mutex
+# github-mutex PR2
 
 Experiment with github actions that control one-run-at-a-time
 
