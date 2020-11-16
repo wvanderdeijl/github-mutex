@@ -94,7 +94,7 @@ function getRunRequestedPayload() {
     core.debug(`action ${action} for label ${label.name} in pr ${payload.pull_request.number} with labels ${payload.pull_request.labels.map((l) => l.name).join(',')}`);
     if ((action === 'labeled' && label.name === labelRequested) ||
         (action === 'unlabeled' &&
-            label.name === labelRunning &&
+            label.name === labelQueued &&
             payload.pull_request.labels.find((l) => l.name === labelRequested) != null)) {
         return payload.pull_request;
     }

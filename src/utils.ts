@@ -39,7 +39,7 @@ export function getRunRequestedPayload(): PullRequest | undefined {
     if (
         (action === 'labeled' && label.name === labelRequested) ||
         (action === 'unlabeled' &&
-            label.name === labelRunning &&
+            label.name === labelQueued &&
             payload.pull_request.labels.find((l) => l.name === labelRequested) != null)
     ) {
         return payload.pull_request;
