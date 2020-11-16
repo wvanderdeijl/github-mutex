@@ -21,7 +21,8 @@ jobs:
             - id: e2e
               name: Simulate e2e run for 20 seconds
               if: ${{ steps.my-action.outputs.run }}
-              run: sleep 20 && exit 1
+              # run: sleep 20 && exit 1
+              run: sleep 20
             - uses: LouisBrunner/checks-action@v0.1.0
               if: ${{ steps.my-action.outputs.run && always() }}
               with:
