@@ -2,157 +2,6 @@ require('./sourcemap-register.js');module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 95:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core = __webpack_require__(186);
-const github = __webpack_require__(438);
-const util_1 = __webpack_require__(669);
-const utils_1 = __webpack_require__(918);
-async function run() {
-    var _a;
-    try {
-        if (core.getState(utils_1.STATE_TOKEN) !== 'true') {
-            core.debug(`state was not transitioned to running; no post action to perform`);
-            return;
-        }
-        // TODO: get from state??
-        const pr = utils_1.getRunRequestedPayload();
-        if (pr == null) {
-            // TODO: log label?
-            core.debug(`nothing to do in post for action ${(_a = github.context.payload.action) !== null && _a !== void 0 ? _a : 'unknown'}`);
-            return;
-        }
-        await utils_1.markCompleted(pr);
-        const queued = await utils_1.findQueuedPullRequests();
-        if (queued.length === 0) {
-            core.debug(`no queued pull requests found`);
-            return;
-        }
-        const luckyOne = queued[Math.floor(Math.random() * queued.length)];
-        core.debug(`going to start pull request ${luckyOne.number} out of candidates: ${stringifyNumbers(queued)}`);
-        await utils_1.resubmit(luckyOne.number);
-    }
-    catch (error) {
-        // HttpError
-        // core.error(`error occured: ${error.message}`);
-        core.error(util_1.inspect(error));
-        core.setFailed(error instanceof Error ? error : `unknown error: ${String(error)}`);
-    }
-}
-run().catch((e) => {
-    console.error(e);
-    process.exit(1);
-});
-function stringifyNumbers(prs) {
-    return JSON.stringify(prs.map((p) => p.number));
-}
-//# sourceMappingURL=post.js.map
-
-/***/ }),
-
-/***/ 918:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.resubmit = exports.markCompleted = exports.markRunning = exports.markQueued = exports.findQueuedPullRequests = exports.findRunningPullRequests = exports.getRunRequestedPayload = exports.STATE_TOKEN = void 0;
-const core = __webpack_require__(186);
-const github = __webpack_require__(438);
-exports.STATE_TOKEN = 'github-mutex-started';
-const labelRequested = core.getInput('labelRequested');
-const labelQueued = core.getInput('labelQueued');
-const labelRunning = core.getInput('labelRunning');
-const STATE_LABELS = [labelQueued, labelRunning];
-const token = core.getInput('GITHUB_TOKEN');
-const octokit = github.getOctokit(token);
-function getRunRequestedPayload() {
-    const action = github.context.payload.action;
-    if (action == null) {
-        core.warning('could not find type of action in payload');
-        return;
-    }
-    if (action !== 'labeled' && action !== 'unlabeled') {
-        core.warning(`triggered by action '${action}' while this should only be configured for ...`);
-        return;
-    }
-    const payload = github.context.payload;
-    const { label } = payload;
-    if (label == null) {
-        core.warning('could not find label in action payload');
-        return;
-    }
-    core.debug(`action ${action} for label ${label.name} in pr ${payload.pull_request.number} with labels ${payload.pull_request.labels.map((l) => l.name).join(',')}`);
-    if ((action === 'labeled' && label.name === labelRequested) ||
-        (action === 'unlabeled' &&
-            label.name === labelQueued &&
-            payload.pull_request.labels.find((l) => l.name === labelRequested) != null)) {
-        return payload.pull_request;
-    }
-}
-exports.getRunRequestedPayload = getRunRequestedPayload;
-async function findRunningPullRequests() {
-    // TODO: querystring encoding
-    return await findPullRequests(`label:${labelRunning}`);
-}
-exports.findRunningPullRequests = findRunningPullRequests;
-async function findQueuedPullRequests() {
-    // TODO: querystring encoding
-    return await findPullRequests(`label:${labelRequested}+label:${labelQueued}`);
-}
-exports.findQueuedPullRequests = findQueuedPullRequests;
-async function findPullRequests(query) {
-    // TODO: querystring encoding
-    const q = `is:pr+${query}`;
-    core.debug(`getting pull request with query ${q}`);
-    const prs = await octokit.search.issuesAndPullRequests({ q });
-    core.debug(`found pull requests: ${JSON.stringify(prs.data.items.map((v) => v.number))}`);
-    return prs.data.items;
-}
-async function markQueued(pr) {
-    await markState(pr, labelQueued);
-}
-exports.markQueued = markQueued;
-async function markRunning(pr) {
-    await markState(pr, labelRunning);
-}
-exports.markRunning = markRunning;
-async function markCompleted(pr) {
-    await octokit.issues.removeLabel({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        issue_number: pr.number,
-        name: labelRunning,
-    });
-}
-exports.markCompleted = markCompleted;
-async function resubmit(prNumber) {
-    const token = core.getInput('PERSONAL_TOKEN');
-    const octokit = github.getOctokit(token);
-    await octokit.issues.removeLabel({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        issue_number: prNumber,
-        name: labelQueued,
-    });
-}
-exports.resubmit = resubmit;
-async function markState(pr, label) {
-    await octokit.issues.setLabels({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        issue_number: pr.number,
-        labels: [...pr.labels.map((l) => l.name).filter((l) => !STATE_LABELS.includes(l)), label],
-    });
-}
-//# sourceMappingURL=utils.js.map
-
-/***/ }),
-
 /***/ 351:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
@@ -5941,6 +5790,157 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 51:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __webpack_require__(186);
+const github = __webpack_require__(438);
+const util_1 = __webpack_require__(669);
+const utils_1 = __webpack_require__(314);
+async function run() {
+    var _a;
+    try {
+        if (core.getState(utils_1.STATE_TOKEN) !== 'true') {
+            core.debug(`state was not transitioned to running; no post action to perform`);
+            return;
+        }
+        // TODO: get from state??
+        const pr = utils_1.getRunRequestedPayload();
+        if (pr == null) {
+            // TODO: log label?
+            core.debug(`nothing to do in post for action ${(_a = github.context.payload.action) !== null && _a !== void 0 ? _a : 'unknown'}`);
+            return;
+        }
+        await utils_1.markCompleted(pr);
+        const queued = await utils_1.findQueuedPullRequests();
+        if (queued.length === 0) {
+            core.debug(`no queued pull requests found`);
+            return;
+        }
+        const luckyOne = queued[Math.floor(Math.random() * queued.length)];
+        core.debug(`going to start pull request ${luckyOne.number} out of candidates: ${stringifyNumbers(queued)}`);
+        await utils_1.resubmit(luckyOne.number);
+    }
+    catch (error) {
+        // HttpError
+        // core.error(`error occured: ${error.message}`);
+        core.error(util_1.inspect(error));
+        core.setFailed(error instanceof Error ? error : `unknown error: ${String(error)}`);
+    }
+}
+run().catch((e) => {
+    console.error(e);
+    process.exit(1);
+});
+function stringifyNumbers(prs) {
+    return JSON.stringify(prs.map((p) => p.number));
+}
+
+
+/***/ }),
+
+/***/ 314:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.resubmit = exports.markCompleted = exports.markRunning = exports.markQueued = exports.findQueuedPullRequests = exports.findRunningPullRequests = exports.getRunRequestedPayload = exports.STATE_TOKEN = void 0;
+const core = __webpack_require__(186);
+const github = __webpack_require__(438);
+exports.STATE_TOKEN = 'github-mutex-started';
+const labelRequested = core.getInput('labelRequested');
+const labelQueued = core.getInput('labelQueued');
+const labelRunning = core.getInput('labelRunning');
+const STATE_LABELS = [labelQueued, labelRunning];
+const token = core.getInput('GITHUB_TOKEN');
+const octokit = github.getOctokit(token);
+function getRunRequestedPayload() {
+    const action = github.context.payload.action;
+    if (action == null) {
+        core.warning('could not find type of action in payload');
+        return;
+    }
+    if (action !== 'labeled' && action !== 'unlabeled') {
+        core.warning(`triggered by action '${action}' while this should only be configured for ...`);
+        return;
+    }
+    const payload = github.context.payload;
+    const { label } = payload;
+    if (label == null) {
+        core.warning('could not find label in action payload');
+        return;
+    }
+    core.debug(`action ${action} for label ${label.name} in pr ${payload.pull_request.number} with labels ${payload.pull_request.labels.map((l) => l.name).join(',')}`);
+    if ((action === 'labeled' && label.name === labelRequested) ||
+        (action === 'unlabeled' &&
+            label.name === labelQueued &&
+            payload.pull_request.labels.find((l) => l.name === labelRequested) != null)) {
+        return payload.pull_request;
+    }
+}
+exports.getRunRequestedPayload = getRunRequestedPayload;
+async function findRunningPullRequests() {
+    // TODO: querystring encoding
+    return await findPullRequests(`label:${labelRunning}`);
+}
+exports.findRunningPullRequests = findRunningPullRequests;
+async function findQueuedPullRequests() {
+    // TODO: querystring encoding
+    return await findPullRequests(`label:${labelRequested}+label:${labelQueued}`);
+}
+exports.findQueuedPullRequests = findQueuedPullRequests;
+async function findPullRequests(query) {
+    // TODO: querystring encoding
+    const q = `is:pr+${query}`;
+    core.debug(`getting pull request with query ${q}`);
+    const prs = await octokit.search.issuesAndPullRequests({ q });
+    core.debug(`found pull requests: ${JSON.stringify(prs.data.items.map((v) => v.number))}`);
+    return prs.data.items;
+}
+async function markQueued(pr) {
+    await markState(pr, labelQueued);
+}
+exports.markQueued = markQueued;
+async function markRunning(pr) {
+    await markState(pr, labelRunning);
+}
+exports.markRunning = markRunning;
+async function markCompleted(pr) {
+    await octokit.issues.removeLabel({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: pr.number,
+        name: labelRunning,
+    });
+}
+exports.markCompleted = markCompleted;
+async function resubmit(prNumber) {
+    const token = core.getInput('PERSONAL_TOKEN');
+    const octokit = github.getOctokit(token);
+    await octokit.issues.removeLabel({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: prNumber,
+        name: labelQueued,
+    });
+}
+exports.resubmit = resubmit;
+async function markState(pr, label) {
+    await octokit.issues.setLabels({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: pr.number,
+        labels: [...pr.labels.map((l) => l.name).filter((l) => !STATE_LABELS.includes(l)), label],
+    });
+}
+
+
+/***/ }),
+
 /***/ 877:
 /***/ ((module) => {
 
@@ -6091,7 +6091,7 @@ module.exports = require("zlib");;
 /******/ 	// module exports must be returned from runtime so entry inlining is disabled
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(95);
+/******/ 	return __webpack_require__(51);
 /******/ })()
 ;
 //# sourceMappingURL=index.js.map
