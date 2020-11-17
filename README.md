@@ -1,4 +1,4 @@
-# github-mutex
+# github-mutex PR1
 
 Experiment with github actions that control one-run-at-a-time
 
@@ -23,8 +23,3 @@ action runs:
     -   post action:
         -   remove `e2e:running` from current pr regardless of action outcome (success or failure)
         -   find `e2e:queued` pr's. If found, select random? candidate and update that label to `e2e:requested` with different token to trigger action
-
-Respond to:
-
--   labeled
--   unlabeled
