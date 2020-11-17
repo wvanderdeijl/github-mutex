@@ -17,7 +17,7 @@ jobs:
         steps:
             # create a check run
             - uses: octokit/request-action@v2.x
-              id: set_status
+              id: create_check_run
               with:
                   route: POST /repos/:repository/check-runs
                   repository: ${{ github.repository }}
